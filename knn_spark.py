@@ -1,4 +1,3 @@
-# Add Spark Python Files to Python Path
 import sys
 import os
 SPARK_HOME = "/opt/bitnami/spark" # Set this to wherever you have compiled Spark
@@ -40,7 +39,7 @@ def turn_digits_to_sc(sc):
 def accuracy_score(test , li, k):
     ret = 0
     #print("debug:", test, li)
-    dic = { test[4]:0 }
+    dic = { test[-1]:0 }
     for i in range(k):
         if li[i][1] in dic.keys() :
             dic[ li[i][1] ] += 1
@@ -48,47 +47,46 @@ def accuracy_score(test , li, k):
             dic[ li[i][1] ] = 1
     
     for i in dic.keys():
-        if dic[test[4]] < dic[i]:
-            return 0
+        if dic[test[-1]] < dic[i] :
+                return 0
     return 1
 
 class Distance_function(object):
-    def distanceAbs(training, test, numfields = 4):
+    def distanceAbs(training, test, numfields):
         # training :list   e.g. [0.1, 0.3, 0.4, 0.5]
-
         ret = 0
         #training = training.collect() #test = training.collect()
         print
-        for i in range(numfields):
+        for i in range(numfields-1):
             ret += abs(float(training[i])-float(test[i]))
         return ret
 
-    def distanceEuc(training, test, numfields = 4):
+    def distanceEuc(training, test, numfields):
         import math
         ret = 0
-        for i in range(numfields):
+        for i in range(numfields-1):
             ret += (float(training[i])-float(test[i]))**2
         return math.sqrt(ret)
 
-    def distanceChe(training, test, numfields = 4):
+    def distanceChe(training, test, numfields):
         ret = 0
-        for i in range(numfields):
+        for i in range(numfields-1):
             tmp = abs(float(training[i])-float(test[i]))
             if tmp > ret:
                 ret = tmp
         return ret
 
-    def distanceCos(training, test, numfields = 4):
+    def distanceCos(training, test, numfields):
         import math
-        dot=sum(a*b for a, b in zip(training, test))
-        norm_training = math.sqrt(sum(a*a for a in training))
-        norm_test = math.sqrt(sum(b*b for b in test))
+        dot=sum(a*b for a, b in zip(training, test) if (index(a)!=numfields-1 & index(b)!=numfields-1) )
+        norm_training = math.sqrt(sum(a*a for a in training if index(a)!=numfields-1))
+        norm_test = math.sqrt(sum(b*b for b in test if index(b)!=numfields-1))
         cos_sim = dot / (norm_training*norm_test)
         ret = 1 - cos_sim
         return ret
 
 
-def KNN(input_data='./dis.txt',_numfields=4, _numNearestNeigbours=5, distance_func='distanceAbs'):
+def KNN(input_data='buildin_iris', _numNearestNeigbours=5, distance_func='distanceAbs'):
 
     # prepare sc
     sc = pyspark.SparkContext()
@@ -108,25 +106,28 @@ def KNN(input_data='./dis.txt',_numfields=4, _numNearestNeigbours=5, distance_fu
 
     testset,trainingset = total_data.randomSplit([3,7], 10) # random seed
 
-    numfields = _numfields # Feature columns
+    numfields = len(testset.collect()[0]) # Feature columns
+    print(numfields)
     numNearestNeigbours = _numNearestNeigbours # K
 
     print("[debug]: test set:", testset.collect(),"\n================\n")
 
     counts = testset.cartesian(trainingset) \
-    .map(lambda tt : (tt[0], getattr(Distance_function, distance_func)(tt[0], tt[1], numfields), tt[1][4]))\
+    .map(lambda tt : (tt[0], getattr(Distance_function, distance_func)(tt[0], tt[1], numfields), tt[1][-1])) \
     .map(lambda p: (tuple(p[0]), (p[1], p[2])) ) \
-    .groupByKey().map(lambda p: (p[0], sorted(p[1]) ) )\
-    .map( lambda t: accuracy_score(t[0], t[1], numNearestNeigbours))
+    .groupByKey().map(lambda p: (p[0], sorted(p[1]) ) ) \
+    .map(lambda t: accuracy_score(t[0], t[1], numNearestNeigbours) )
 
-    print("[debug]: in final.py :", counts.collect()) # []
+    print('[debug]: in final.py :', counts.collect() )
+
     ret = counts.collect()
+
     score = 0
     for i in ret:
         score += i
     score = float(score)/len(ret)
     sc.stop()
     
-    return [distance_func, score, _numNearestNeigbours, input_data, _numfields] # ['Some distance', 0.78, 5, '.dis.txt', 4]
+    return [distance_func, score, _numNearestNeigbours, input_data, numfields] # ['Some distance', 0.78, 5, '.dis.txt', 4]
 
-#KNN()
+KNN('buildin_wine')

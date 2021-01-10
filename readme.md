@@ -6,6 +6,8 @@
     - 但相對的 DB 也要新增 table 紀錄，以及在 training 時需要新欄位紀錄哪位使用者執行的。
 - 數據處理 : Spark (Pyspark)
 - DataBase : MariaDB feat. Flask-SQLAlchemy 的 ORM 框架來進行存取
+  - 1/11 更新 : 希望能改成 MongoDB，更貼近雲端平台互聯。
+  - 可以參照 [此教學](https://medium.com/@summerxialinqiao/connect-flask-app-to-mongodb-atlas-using-pymongo-328e119a7bd8)
 - ML Algorithm : KNN
   - 參數 : 
     1. 訓練集 (可以 call sklean 內建的 buildin_wine、buildin_iris)
@@ -19,6 +21,26 @@
     - 可以參考 [Doc: Classification and regression](https://spark.apache.org/docs/latest/ml-classification-regression.html)
       - Python 版本參數可以參考 [此 Doc](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html)
 
+
+
+# 待完成
+
+    1. Query DB 可以給予欄位篩選
+    2. 提供更多對於 KNN 參數之調整
+      - 可以上傳自己的 txt file
+    3. 對於登入登出的整合
+       - Login / Logout 的合理性不太夠 : 
+         - Login 之後，Login Btn 應該改成 User (雖然的確可以用跳轉解決 ... )
+         - 或是 Btn 名稱改成 User
+
+# 更新紀錄
+
+- 2020.01.10
+  - 將 ``final.py`` 改名成 ``knn_spark.py``，相對地更動 ``app.py`` 內的 import 相關部分。
+  - In ``knn_spark.py`` : 
+    - 修正預設 label 總是讀取 data[4] 的問題 (改讀 data[-1])
+    - 修正計算距離時會將 label 當成 data 一起加入計算
+    - 修正計算分數時因為會 compare label 卻讀 data[4] 而非 data[-1] 的問題
 
 # 如何使用
 
@@ -40,17 +62,10 @@
     - port 預設是 5000，有可能因為 code 更改過程指定成其他的，可另外指定，例如 ``app.run(host='0.0.0.0', port=1234)``
     - 有另外寫一個 ``test.py``，裡面就只放一個簡單的 ``KNN()`` function (實際上並不能 run KNN)
       用途是測試串接前後端是否有成功，總之打開網頁，然後輸入參數，可以觀察 ``python app.py`` 底下的 log，是否有正常的運作 POST Method。
+    
+    
 
-
-
-待完成 : 
-    1. Query DB 可以給予欄位篩選
-    2. 提供更多對於 KNN 參數之調整
-      - 可以上傳自己的 txt file
-
-
-
-已知可能 bug :
+- 已知可能 bug :
 
 1. 網頁端執行參數不可為空。JS 會傳 null 過去，然後把 None 當作參數傳進去後端。
 2. container 必須要有對應 port : ``-p 5678:5000``，

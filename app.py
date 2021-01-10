@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, jsonify, request
 #import test
-import final
+import knn_spark
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -50,7 +50,7 @@ def translate_text():
     num_neigbour = data['neigbour']
     distance_func = data['distance']
     print(file_url, num_fields, num_neigbour, distance_func)
-    response = final.KNN(file_url, int(num_fields), int(num_neigbour), distance_func)
+    response = knn_spark.KNN(file_url, int(num_fields), int(num_neigbour), distance_func)
     p = Knn(response[0], response[1], response[2], response[3], response[4])
     p.save_to_db()
     print(response)
