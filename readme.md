@@ -7,31 +7,36 @@
 - 數據處理 : Spark (Pyspark)
 - DataBase : MariaDB feat. Flask-SQLAlchemy 的 ORM 框架來進行存取
   - 1/11 更新 : 希望能改成 MongoDB，更貼近雲端平台互聯。
-  - 可以參照 [此教學](https://medium.com/@summerxialinqiao/connect-flask-app-to-mongodb-atlas-using-pymongo-328e119a7bd8)
+    - 可以參照 [此教學](https://medium.com/@summerxialinqiao/connect-flask-app-to-mongodb-atlas-using-pymongo-328e119a7bd8)
+    - 1/13 更新 : 比想像中麻煩，因為原本的 ORM 不支援 mongo，要得畫得另外裝 lib 
+      且指令都要改過，可以參考 [中文簡單教學](http://www.bjhee.com/flask-ext5.html) 和 [官方doc](https://pymongo.readthedocs.io/en/stable/atlas.html)
 - ML Algorithm : KNN
   - 參數 : 
     1. 訓練集 (可以 call sklean 內建的 buildin_wine、buildin_iris)
     2. 要取幾個鄰居
     3. Feature 的資料 column 數目 (資料維度)
     4. Distance Function
-  - 希望能新增以下參數 :
-    - Seed, dataset 切割比例, 可以上傳自己的 txt file 當訓練集
-  - 希望能新增其他 ML Algorithm
-    - 這樣在做 training 時要新增 column: training algorithm
-    - 可以參考 [Doc: Classification and regression](https://spark.apache.org/docs/latest/ml-classification-regression.html)
-      - Python 版本參數可以參考 [此 Doc](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html)
+  
 
 
 
 # 待完成
 
-    1. Query DB 可以給予欄位篩選
-    2. 提供更多對於 KNN 參數之調整
-      - 可以上傳自己的 txt file
-    3. 對於登入登出的整合
-       - Login / Logout 的合理性不太夠 : 
-         - Login 之後，Login Btn 應該改成 User (雖然的確可以用跳轉解決 ... )
-         - 或是 Btn 名稱改成 User
+1. Query DB 可以給予欄位篩選
+2. 提供更多對於 KNN 參數之調整
+  - Seed、dataset 切割比例、可以上傳自己的 txt file
+3. 對於登入登出的整合
+  - Login / Logout 的合理性不太夠 : 
+  - Login 之後，Login Btn 應該改成 User (雖然的確可以用跳轉解決 ... )
+  - 或是 Btn 名稱改成 User
+4. 也許可以試著加入 OATH2.0 
+  - 參考 [這篇](https://myapollo.com.tw/zh-tw/integrating-google-sign-in-into-flask-app/)
+5. 希望能新增其他 ML Algorithm
+  - 這樣在做 training 時要新增 column: training algorithm
+  - 可以參考 [Doc: Classification and regression](https://spark.apache.org/docs/latest/ml-classification-regression.html)
+    - Python 版本參數可以參考 [此 Doc](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html)
+
+
 
 # 更新紀錄
 
