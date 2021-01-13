@@ -14,6 +14,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users_table.sqlite3' # "users
 app.permanent_session_lifetime = timedelta(minutes=3)
 db = SQLAlchemy(app)
 
+
 class users_table(db.Model): # The columns represent pieces of information；Rows represent in ；Rows represent individual items
     _id = db.Column("id",db.Integer, primary_key=True) # id will be automatically be created for us because it's a primary key
     name = db.Column(db.String(100)) # 100 here is the maximum length of the string that we want to store(100 characters)
@@ -153,5 +154,6 @@ if __name__ == '__main__':
     #db.create_all()
     #app.run(host='0.0.0.0')
     app.run(debug=True)
+    db.create_all()
 	#print(type(o.rid), type(o.distance), type(o.score), type(o.neighbor), type(o.datasetName), type(o.featureLen), type(o.timestamp))
 	
