@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+
+{% block title %} Home Page {% endblock %}
+{% block content %} 
+
+<div class="container">
+    <p>這是一個線上的 ML Application !</p>
+    <div id='write' class='is-node'>
+        <h1><a name="簡介" class="md-header-anchor"></a><span>簡介</span></h1>
+        <ul>
+            <li>
+                <p><span>前端 + 後端 : python flask</span></p>
+                <ul>
+                    <li>
+                        <p><span>希望能新增登入頁面</span></p>
+                        <ul>
+                            <li><span>但相對的 DB 也要新增 table 紀錄，以及在 training 時需要新欄位紀錄哪位使用者執行的。</span></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <p><span>數據處理 : Spark (Pyspark)</span></p>
+            </li>
+            <li>
+                <p><span>DataBase : MariaDB feat. Flask-SQLAlchemy 的 ORM 框架來進行存取</span></p>
+            </li>
+            <li>
+                <p><span>ML Algorithm : KNN</span></p>
+                <ul>
+                    <li>
+                        <p><span>參數 : </span></p>
+                        <ol start=''>
+                            <li><span>訓練集 (可以 call sklean 內建的 buildin_wine、buildin_iris)</span></li>
+                            <li><span>要取幾個鄰居</span></li>
+                            <li><span>Feature 的資料 column 數目 (資料維度)</span></li>
+                            <li><span>Distance Function</span></li>
+                        </ol>
+                    </li>
+                    <li>
+                        <p><span>希望能新增以下參數 :</span></p>
+                        <ul>
+                            <li><span>Seed, dataset 切割比例, 可以上傳自己的 txt file 當訓練集</span></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <p><span>希望能新增其他 ML Algorithm</span></p>
+                        <ul>
+                            <li>
+                                <p><span>這樣在做 training 時要新增 column: training algorithm</span></p>
+                            </li>
+                            <li>
+                                <p><span>可以參考 </span><a
+                                        href='https://spark.apache.org/docs/latest/ml-classification-regression.html'><span>Doc:
+                                            Classification and regression</span></a></p>
+                                <ul>
+                                    <li><span>Python 版本參數可以參考 </span><a
+                                            href='https://spark.apache.org/docs/latest/api/python/pyspark.ml.html'><span>此
+                                                Doc</span></a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        </div>
+    </div>
+                            
+</div>
+
+
+{% endblock %}

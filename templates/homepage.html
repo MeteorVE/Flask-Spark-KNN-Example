@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %} Home Page {% endblock %}
+{% block content %} 
+<div class="container">
+    <div class="row">
+        <h3>٩(●˙▿˙●)۶…⋆ฺ 歡迎來到線上 ML 程式 ٩(●˙▿˙●)۶…⋆ฺ</h3>
+    </div>
+    <br><br>
+    <div class="row">
+        <div class="col-md-4">
+            <h2>KNN</h2>
+            <p>在圖型識別領域中，最近鄰居法（KNN演算法，又譯K-近鄰演算法）是一種用於分類和迴歸的無母數統計方法[1]。在這兩種情況下，輸入包含特徵空間（Feature Space）中的k個最接近的訓練樣本。
+            在k-NN分類中，輸出是一個分類族群。一個物件的分類是由其鄰居的「多數表決」確定的，k個最近鄰居（k為正整數，通常較小）中最常見的分類決定了賦予該物件的類別。若k = 1，則該物件的類別直接由最近的一個節點賦予。
+            在k-NN迴歸中，輸出是該物件的屬性值。該值是其k個最近鄰居的值的平均值。</p>
+            <p><a class="btn btn-secondary" href="/knn" role="button">View details »</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>ALGO</h2>
+            <p>Description</p>
+            <p><a class="btn btn-secondary" href="#" role="button">View details »</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>ALGO</h2>
+            <p>Description</p>
+            <p><a class="btn btn-secondary" href="#" role="button">View details »</a></p>
+        </div>
+    </div>
+
+    <div class="py-5">
+        <!-- <image src="https://i.imgur.com/XbmqL7x.jpg"> -->
+    </div>
+    <!-- <image src="{{url_for('static',filename='')}}"> -->
+</div>
+{% endblock %}
