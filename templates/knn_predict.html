@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %} KNN algorithm Predict {% endblock %}
+{% block content %} 
+
+<div class="container">
+  <h1>Online Train</h1>
+  <p>Give me feature, I will give u a label.
+  </p>
+  <div class="row">
+    <div class="col">
+      <form>
+        <div class="form-group">
+          <label for="para-to-train"><strong>Enter the parameter</strong></label>
+          <input type="number" class="form-control" id="numfields" aria-describedby="numfields" placeholder="Enter numfields (Feature cols)" value='4'>
+          <input type="text" class="form-control" id="feature" aria-describedby="feature"  placeholder="Enter Feature" value=''>
+          <label for="para-to-train">
+            For example: data=[0.1 0.2 0.3 0.4]<br>
+            此頁面會以一個我們已經訓練好的 Model，用您的 Feature 做 Predict，回傳一個 Label 給您。
+          </label>
+
+        </div>
+          
+        <button type="submit" class="btn btn-primary mb-2" id="train">Train</button></br>
+        </br>
+      </form>
+    </div>
+
+    <div class="col">
+      <form>
+        <div class="form-group" id="train-response">
+          <label for="train-result"><strong>Return:</strong></label>
+          <textarea readonly class="form-control" id="train-result" rows="5"></textarea>
+        </div>
+      </form>
+    </div> <!-- col -->
+  </div> <!-- row -->
+
+</div> <!-- container -->
+
+{% endblock %}

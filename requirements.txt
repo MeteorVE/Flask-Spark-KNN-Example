@@ -4,3 +4,5 @@ flask
 sklearn
 pymysql
 flask_sqlalchemy
+configparser
+google-auth-oauthlib

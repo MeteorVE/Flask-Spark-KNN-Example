@@ -1,7 +1,7 @@
 
 # 簡介
 
-- 前端 + 後端 : python flask
+- 前端 + 後端 : python flask、RESTful 
   - 希望能新增登入頁面
     - 但相對的 DB 也要新增 table 紀錄，以及在 training 時需要新欄位紀錄哪位使用者執行的。
 - 數據處理 : Spark (Pyspark)
@@ -22,19 +22,42 @@
 
 # 待完成
 
-1. Query DB 可以給予欄位篩選
-2. 提供更多對於 KNN 參數之調整
-  - Seed、dataset 切割比例、可以上傳自己的 txt file
+1. Query DB 可以給予欄位篩選 (OK)
 3. 對於登入登出的整合
-  - Login / Logout 的合理性不太夠 : 
-  - Login 之後，Login Btn 應該改成 User (雖然的確可以用跳轉解決 ... )
-  - 或是 Btn 名稱改成 User
-4. 也許可以試著加入 OATH2.0 
+  - Login 之後，Login Btn 應該改成 User (雖然的確可以用跳轉解決 ... ) (OK)
+  - 要用密碼 (OK)
+4. 也許可以試著加入 Oath 2.0
   - 參考 [這篇](https://myapollo.com.tw/zh-tw/integrating-google-sign-in-into-flask-app/)
-5. 希望能新增其他 ML Algorithm
-  - 這樣在做 training 時要新增 column: training algorithm
-  - 可以參考 [Doc: Classification and regression](https://spark.apache.org/docs/latest/ml-classification-regression.html)
+  - 目前 username 仍然是抓 email 來用，才能保證 unique。
+  - 登出 : 檢查 session sign in 方式然後後端 Request revoke
+    參考 [這篇](https://developers.google.com/identity/protocols/oauth2/web-server#python_8)
+5. 有關 ML Algorithm 
+  - **針對每個 algo 都要弄一個 DB (因為要 Query)** (寫 Class)
+    - 加使用者的 Name
+  - **Default-Mode 的支持 (predict function)**
+  - **補一下 seed**
+  - 可以上傳自己的 txt file
+  - 前端呈現 Chart
+  - 相關可以參考 [Doc: Classification and regression](https://spark.apache.org/docs/latest/ml-classification-regression.html)
     - Python 版本參數可以參考 [此 Doc](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html)
+
+
+
+```predict.py
+def predict_one( features, algo_name, model_name):
+	
+	LB = turn_features_to_labelpoint(features)
+	if algo_name == 'knn':
+		km = knn_load_mod()
+		result = km.predict(features)
+		
+	return label
+	
+
+
+```
+
+
 
 
 
