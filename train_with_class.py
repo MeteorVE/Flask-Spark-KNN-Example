@@ -134,6 +134,13 @@ def KNN(sc, dataset='./dis.txt', num_nearest_neigbours=5, distance_func='distanc
 
 ########## 2021/1/14 updated
 
+def get_userdefined_dataset(sc, filename):
+    from pyspark.mllib.regression import LabeledPoint
+    import numpy as np
+    import pandas as pd
+    userdefined_dataset = pd.read_csv(
+        "upload/" + filename, header=None, sep=" ").to_numpy(dtype=np.float64)
+    return sc.parallelize(zip(userdefined_dataset[:, -1], userdefined_dataset[:, :-1])).map(lambda x: LabeledPoint(x[0], x[1]))
 
 class train_model(object):
 
@@ -283,6 +290,7 @@ def call_train_function(algorithm, mode, algorithm_parameter):
             data = getattr(get_dataset, "get_iris_dataset")(sc)
         else:
             print('read from file or throw exception ...')
+            data = get_userdefined_dataset(sc, data_name)
             # read file to get dataset
             # data = read( ??? )
 

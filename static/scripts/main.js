@@ -33,7 +33,7 @@ $(function() {
       var seed = document.getElementById("seed").value;
       var categoricalFeaturesInfo = document.getElementById("categoricalFeaturesInfo").value;
       var num_tree = document.getElementById("num_tree").value;
-      var trainRequest = { 'algorithm': useAlgo, 'dataset': dataset, 'seed': parseInt(seed), 'num_tree': num_tree, 'categoricalFeaturesInfo': JSON.parse(categoricalFeaturesInfo) }
+      var trainRequest = { 'algorithm': useAlgo, 'dataset': dataset, 'seed': parseInt(seed), 'numTrees': parseInt(num_tree), 'categoricalFeaturesInfo': JSON.parse(categoricalFeaturesInfo) }
     }
     console.log("trainRequest=",trainRequest)
     if (useAlgo !== "") {

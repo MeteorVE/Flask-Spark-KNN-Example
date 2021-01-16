@@ -1,72 +1,60 @@
-
 # 簡介
 
-- 前端 + 後端 : python flask、RESTful 
-  - 希望能新增登入頁面
-    - 但相對的 DB 也要新增 table 紀錄，以及在 training 時需要新欄位紀錄哪位使用者執行的。
-- 數據處理 : Spark (Pyspark)
-- DataBase : MariaDB feat. Flask-SQLAlchemy 的 ORM 框架來進行存取
-  - 1/11 更新 : 希望能改成 MongoDB，更貼近雲端平台互聯。
-    - 可以參照 [此教學](https://medium.com/@summerxialinqiao/connect-flask-app-to-mongodb-atlas-using-pymongo-328e119a7bd8)
-    - 1/13 更新 : 比想像中麻煩，因為原本的 ORM 不支援 mongo，要得畫得另外裝 lib 
-      且指令都要改過，可以參考 [中文簡單教學](http://www.bjhee.com/flask-ext5.html) 和 [官方doc](https://pymongo.readthedocs.io/en/stable/atlas.html)
-- ML Algorithm : KNN
-  - 參數 : 
-    1. 訓練集 (可以 call sklean 內建的 buildin_wine、buildin_iris)
-    2. 要取幾個鄰居
-    3. Feature 的資料 column 數目 (資料維度)
-    4. Distance Function
-  
+Machine Learning As A Service。
+透過連結全端 + 雲服務 + Oauth2.0，打造友好的 ML Interface 平台。
 
 
+# 架構
 
-複製步驟:
+- 前端 + 後端 : **Flask with RESTful API**
+  - 呈現 ML Algorithm Page
+  - 做**登入登出系統**
+    - input 防呆
+  - 串接 **Google Oauth 2.0** 當作另一種登入方式。
+    - 搭配 Training History 查詢，可以根據不同使用者保有私人訓練紀錄。
+- DataBase : **MariaDB**
+  - feat. Flask-SQLAlchemy 的 ORM 框架來進行存取
+    - 比較**不容易被 SQL Injection**
+  - 用來儲存每次 Training 的 History，包含 Score 和該 Algorothm 所使用到的參數 
+- 數據處理 : **Spark (Pyspark)**
+  * 使用原因 : 在 **Memory** 跑，速度較快且適合大型數據庫工作指派。
+- ML Algorithm : 主要都是 **Classification and Regression** Algorithm 領域
+  - **KNN** (dataset, seed, num_nearest_neigbours, distance_func)
+  - **Naive Bayes** (dataset, seed)
+  - **Logistic Regression** (dataset, seed, iterations)
+  - **Decision Tree** (dataset, seed, categoricalFeaturesInfo)
+  - **Random Forest** (dataset, seed, categoricalFeaturesInfo, numTrees)
+  - 特色 : 
+    - 可以自行設定參數
+    - **可以使用自己的 dataset 來做訓練**，不一定要用我們內建提供的
+      - 有對檔案類型**進行篩選**，避免被上傳惡意檔案
+    - 除了 Training 指定 dataset 功能，**也有 Predict 功能**，可以根據 default/指定 model 來預測 Label 值。
+    - 每次訓練都會記錄到 Database，以後**可以根據 Training History 查詢** 
+      - 可以針對特定 Column 進行篩選。
 
-1. Create class (for database)
-2. add @app.route、Copy html 檔案
-3. 改 JS 和 HTML
+# 介面預覽
 
+- 主頁面
 
+  ![主頁面](https://i.imgur.com/jIGIdn5.png)
 
-# 待完成
+- 登入頁面
+![登入頁面](https://i.imgur.com/nefAELd.png)
 
-1. Query DB 可以給予欄位篩選 (OK)
-3. 對於登入登出的整合
-  - Login 之後，Login Btn 應該改成 User (雖然的確可以用跳轉解決 ... ) (OK)
-  - 要用密碼 (OK)
-4. 也許可以試著加入 Oath 2.0
-  - 參考 [這篇](https://myapollo.com.tw/zh-tw/integrating-google-sign-in-into-flask-app/)
-  - 目前 username 仍然是抓 email 來用，才能保證 unique。
-  - 登出 : 檢查 session sign in 方式然後後端 Request revoke
-    參考 [這篇](https://developers.google.com/identity/protocols/oauth2/web-server#python_8) [官方 Doc](https://github.com/googleapis/google-api-python-client)
-  - 關於 JS [GoogleUser.getAuthResponse](https://developers.google.com/identity/sign-in/web/reference#gapiauth2authresponse)
-5. 有關 ML Algorithm 
-  - **針對每個 algo 都要弄一個 DB (因為要 Query)** (寫 Class)
-    - 加使用者的 Name
-  - **Default-Mode 的支持 (predict function)**
-  - **補一下 seed**
-  - 可以上傳自己的 txt file
-  - 前端呈現 Chart
-  - 相關可以參考 [Doc: Classification and regression](https://spark.apache.org/docs/latest/ml-classification-regression.html)
-    - Python 版本參數可以參考 [此 Doc](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html)
+- 普通登入動畫 (https://i.imgur.com/vt53wIp.gif)
+![普通登入動畫](https://i.imgur.com/vt53wIp.gif) 
 
+- Google Oauth2.0 登入動畫 (https://i.imgur.com/UkMbYoZ.gif)
+![Google Oauth2.0 登入動畫](https://i.imgur.com/UkMbYoZ.gif)
 
+- KNN 訓練頁面
+![](https://i.imgur.com/fklqOsj.png)
 
-```predict.py
-def predict_one( features, algo_name, model_name):
-	
-	LB = turn_features_to_labelpoint(features)
-	if algo_name == 'knn':
-		km = knn_load_mod()
-		result = km.predict(features)
-		
-	return label
-	
+- Query History 範例 
+![](https://i.imgur.com/hIVfSig.png)
 
-
-```
-
-
+- Predict 頁面範例
+  ![](https://i.imgur.com/n8hyJv3.png)
 
 
 

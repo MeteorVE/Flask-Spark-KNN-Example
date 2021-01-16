@@ -354,7 +354,7 @@ def train_with_algo():
     
     # Create a record and Save to DB
     p = globals()[algorithm.lower()](
-        **data, username='anonymous' if "user" not in session else session['user'])
+        **data, score=train_score, username='anonymous' if "user" not in session else session['user'])
     p.save_to_db()
     
     return jsonify(train_score)
@@ -383,32 +383,42 @@ def query_train_data():
 
     db_data = None
     if data['query_num'] == '':
-        data['query_num'] = 10
+        data['query_num'] = 100
+
+    username = 'anonymous' if "user" not in session else session['user']
 
     algo_class = globals()[data['use_algo'].lower()]
     if data['query_table_key'] == "all":
-        db_data = algo_class.query.limit(int(data['query_num']))
+        db_data = algo_class.query.filter_by(
+            username=username).limit(int(data['query_num']))
     elif data['query_table_key'] == "distance":
         db_data = algo_class.query.filter_by(
-            distance=data['query_table_value']).limit(int(data['query_num']))
+            distance=data['query_table_value']).filter_by(
+            username=username).limit(int(data['query_num']))
     elif data['query_table_key'] == "datasetName":
         db_data = algo_class.query.filter_by(
-            dataset_name=data['query_table_value']).limit(int(data['query_num']))
+            dataset_name=data['query_table_value']).filter_by(
+            username=username).limit(int(data['query_num']))
     elif data['query_table_key'] == "neighbor":
         db_data = algo_class.query.filter_by(
-            neighbor=data['query_table_value']).limit(int(data['query_num']))
+            neighbor=data['query_table_value']).filter_by(
+            username=username).limit(int(data['query_num']))
     elif data['query_table_key'] == "seed":
         db_data = algo_class.query.filter_by(
-            seed=data['query_table_value']).limit(int(data['query_num']))
+            seed=data['query_table_value']).filter_by(
+            username=username).limit(int(data['query_num']))
     elif data['query_table_key'] == "iterations":
         db_data = algo_class.query.filter_by(
-            iterations=data['query_table_value']).limit(int(data['query_num']))
+            iterations=data['query_table_value']).filter_by(
+            username=username).limit(int(data['query_num']))
     elif data['query_table_key'] == "categorical_features_info":
         db_data = algo_class.query.filter_by(
-            categorical_features_info=data['query_table_value']).limit(int(data['query_num']))
+            categorical_features_info=data['query_table_value']).filter_by(
+            username=username).limit(int(data['query_num']))
     elif data['query_table_key'] == "num_tree":
         db_data = algo_class.query.filter_by(
-            num_tree=data['query_table_value']).limit(int(data['query_num']))
+            num_tree=data['query_table_value']).filter_by(
+            username=username).limit(int(data['query_num']))
     else:
         db_data = ["key not found"]
 
@@ -429,7 +439,7 @@ def query_train_data():
         for idx, o in enumerate(db_data):
             response[idx] = [o.rid, o.dataset_name, o.score, o.categorical_features_info, o.seed,
                              o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
-    elif data['use_algo'] == 'RT':
+    elif data['use_algo'] == 'RF':
         for idx, o in enumerate(db_data):
             response[idx] = [o.rid, o.dataset_name, o.score, o.categorical_features_info, o.num_tree, o.seed,
                              o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
