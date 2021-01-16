@@ -3,15 +3,40 @@ $(function() {
   //Translate text with flask route
   $("#train").on("click", function(e) {
     e.preventDefault();
-    var fileUrl = document.getElementById("file_url").value;
-    var numFields = document.getElementById("numfields").value;
-    var numNeigbours = document.getElementById("numNearestNeigbours").value;
-    var distanceFunc = document.getElementById("distance").value;
-    var seed = document.getElementById("seed").value;
     var useAlgo = document.getElementById("algo").getAttribute("name");
-    var trainRequest = { 'url': fileUrl, 'field': numFields, 'neigbour': numNeigbours, 'distance': distanceFunc, 'use_algo': useAlgo, 'seed': seed}
+    if(useAlgo == 'KNN'){
+      var fileUrl = document.getElementById("dataset").value;
+      var numNeigbours = document.getElementById("numNearestNeigbours").value;
+      var distanceFunc = document.getElementById("distance").value;
+      var seed = document.getElementById("seed").value;
+      var trainRequest = { 'dataset': fileUrl, 'num_nearest_neigbours': parseInt(numNeigbours), 'distance_func': distanceFunc, 'algorithm': useAlgo, 'seed': parseInt(seed)}
+    }
+    else if (useAlgo == 'NB'){
+      var dataset = document.getElementById("dataset").value;
+      var seed = document.getElementById("seed").value;
+      var trainRequest = { 'algorithm': useAlgo, 'dataset': dataset, 'seed': parseInt(seed) }
+    }
+    else if (useAlgo == 'LR') {
+      var dataset = document.getElementById("dataset").value;
+      var seed = document.getElementById("seed").value;
+      var iterations = document.getElementById("iterations").value;
+      var trainRequest = { 'algorithm': useAlgo, 'dataset': dataset, 'seed': parseInt(seed), 'iterations': iterations }
+    }
+    else if (useAlgo == 'DT') {
+      var dataset = document.getElementById("dataset").value;
+      var seed = document.getElementById("seed").value;
+      var categoricalFeaturesInfo = document.getElementById("categoricalFeaturesInfo").value;
+      var trainRequest = { 'algorithm': useAlgo, 'dataset': dataset, 'categoricalFeaturesInfo': JSON.parse(categoricalFeaturesInfo),'seed': parseInt(seed)}
+    }
+    else if (useAlgo == 'RF') {
+      var dataset = document.getElementById("dataset").value;
+      var seed = document.getElementById("seed").value;
+      var categoricalFeaturesInfo = document.getElementById("categoricalFeaturesInfo").value;
+      var num_tree = document.getElementById("num_tree").value;
+      var trainRequest = { 'algorithm': useAlgo, 'dataset': dataset, 'seed': parseInt(seed), 'num_tree': num_tree, 'categoricalFeaturesInfo': JSON.parse(categoricalFeaturesInfo) }
+    }
     console.log("trainRequest=",trainRequest)
-    if (numNeigbours !== "") {
+    if (useAlgo !== "") {
       $.ajax({
         url: '/train',
         method: 'POST',
@@ -52,43 +77,10 @@ $(function() {
           console.log("response=", _data)
           data = _data['data']
 
-          var queryTable=document.getElementById('query-table');
+          var queryTable = document.getElementById('query-table');
+          var tr_el = document.getElementById('cloumn-label');
           queryTable.innerHTML = '';
-
-          var label_row=document.createElement('tr');
-          var labelNode=document.createTextNode('Rid');
-          var label_col=document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          labelNode=document.createTextNode('Distance');
-          label_col=document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          labelNode=document.createTextNode('Score');
-          label_col=document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          labelNode=document.createTextNode('Neighbor');
-          label_col=document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          labelNode=document.createTextNode('DatasetName');
-          label_col=document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          labelNode=document.createTextNode('FeatureLen');
-          label_col=document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          labelNode = document.createTextNode('Seed');
-          label_col = document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          labelNode=document.createTextNode('Timestamp');
-          label_col=document.createElement('td');
-          label_col.appendChild(labelNode);
-          label_row.appendChild(label_col);
-          queryTable.appendChild(label_row);
+          queryTable.appendChild(tr_el);
 
           for (var i = 0; i < Object.keys(data).length ;i++){
             var table_row=document.createElement('tr');
@@ -107,6 +99,31 @@ $(function() {
     };
   });
 
+  $("#predict").on("click", function (e) {
+    e.preventDefault();
+    var useAlgo = document.getElementById("algo").getAttribute("name");
+    var feature = document.getElementById("feature").value;
+    var predictRequest = {'feature': JSON.parse(feature), 'algorithm': useAlgo}
+
+    console.log("predictRequest=", predictRequest)
+    if (useAlgo !== "") {
+      $.ajax({
+        url: '/predict',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        dataType: 'json',
+        data: JSON.stringify(predictRequest),
+        success: function (data) {
+          console.log("predict response=", data)
+          // label
+          document.getElementById("train-result").textContent = data;
+        }
+
+      });
+    };
+  });
 
 })
 

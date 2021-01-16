@@ -1,9 +1,10 @@
 from flask import Flask, render_template, url_for, jsonify, request, redirect, session, flash
 import test
-#import final
 from datetime import timedelta
 from flask_sqlalchemy import SQLAlchemy
 import configparser
+import json
+#import knn_spark
 
 app = Flask(__name__)
 app.secret_key = "hellothisismysecretkey"
@@ -21,11 +22,12 @@ config = configparser.ConfigParser()
 config.read('Config.ini')
 GOOGLE_OAUTH2_CLIENT_ID = config['GOOGLE']['ClientId']
 
+import os
 from werkzeug.utils import secure_filename
-UPLOAD_FOLDER = 'C:/Users/MeteorV/Desktop/upload'
-ALLOWED_EXTENSIONS = set(['pdf', 'png', 'jpg', 'jpeg', 'gif'])
+UPLOAD_FOLDER = './upload'
+ALLOWED_EXTENSIONS = set(['pdf', 'png', 'jpg', 'jpeg', 'gif', 'txt'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 256 * 1024 * 1024
 
 class users_table(db.Model): # The columns represent pieces of information；Rows represent in ；Rows represent individual items
     _id = db.Column("id",db.Integer, primary_key=True) # id will be automatically be created for us because it's a primary key
@@ -45,29 +47,107 @@ class knn(db.Model):
     username = db.Column(db.VARCHAR(255))
     score = db.Column(db.Float)
     neighbor = db.Column(db.Integer)
-    datasetName = db.Column(db.VARCHAR(255))
-    featureLen = db.Column(db.Integer)
+    dataset_name = db.Column(db.VARCHAR(255))
+    #featureLen = db.Column(db.Integer)
     seed = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
     
-    def __init__(self, distance='', username='anonymous', score=0, neighbor=1, datasetName='', featureLen=0, seed=10):
-        self.distance = distance
+    def __init__(self, distance_func='', username='anonymous', score=0, num_nearest_neigbours=3, dataset='', seed=10):
+        self.distance = distance_func
         self.username = username
         self.score = score
-        self.neighbor = neighbor
+        self.neighbor = num_nearest_neigbours
         self.seed = seed
-        self.datasetName = datasetName
-        self.featureLen = featureLen
+        self.dataset_name = dataset
+        #self.featureLen = featureLen
        
-
     def save_to_db(self):
         db.session.add(self) 
         db.session.commit()
 
-    def query_all(self):
-        #self.query.filter_by(rid= _rid).first()
-        self.query.all()
 
+class nb(db.Model):
+    # Class Name = Table Name
+    rid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.VARCHAR(255))
+    score = db.Column(db.Float)
+    dataset_name = db.Column(db.VARCHAR(255))
+    seed = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __init__(self, username='anonymous', score=0, dataset='', seed=10):
+        self.username = username
+        self.score = score
+        self.seed = seed
+        self.dataset_name = dataset
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+
+class lr(db.Model):
+    rid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.VARCHAR(255))
+    score = db.Column(db.Float)
+    dataset_name = db.Column(db.VARCHAR(255))
+    seed = db.Column(db.Integer)
+    iterations = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __init__(self, username='anonymous', score=0, iterations=10, dataset='', seed=10):
+        self.username = username
+        self.score = score
+        self.seed = seed
+        self.dataset_name = dataset
+        self.iterations = iterations
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+
+class dt(db.Model):
+    rid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.VARCHAR(255))
+    score = db.Column(db.Float)
+    dataset_name = db.Column(db.VARCHAR(255))
+    categorical_features_info = db.Column(db.VARCHAR(255))
+    seed = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __init__(self, username='anonymous', categoricalFeaturesInfo={}, score=0, dataset='', seed=10):
+        self.username = username
+        self.score = score
+        self.seed = seed
+        self.dataset_name = dataset
+        self.categorical_features_info = json.dumps(categoricalFeaturesInfo)
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+class rf(db.Model):
+    rid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.VARCHAR(255))
+    score = db.Column(db.Float)
+    dataset_name = db.Column(db.VARCHAR(255))
+    categorical_features_info = db.Column(db.VARCHAR(255))
+    seed = db.Column(db.Integer)
+    num_tree = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __init__(self, username='anonymous', categoricalFeaturesInfo={}, numTrees=5, score=0, dataset='', seed=10):
+        self.username = username
+        self.score = score
+        self.seed = seed
+        self.dataset_name = dataset
+        self.num_tree = numTrees
+        self.categorical_features_info = json.dumps(categoricalFeaturesInfo)
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
 
 @app.route('/')
 def homepage():
@@ -77,10 +157,57 @@ def homepage():
 def knn_algo_page():
     return render_template('knn.html')
 
-@app.route('/knn_predict')
-def knn_predict_page():
-    return render_template('knn_predict.html')
+# @app.route('/knn_predict')
+# def knn_predict_page():
+#     return render_template('knn_predict.html')
 
+@app.route('/nb')
+def nb_algo_page():
+    return render_template('nb.html')
+
+@app.route('/lr')
+def lr_algo_page():
+    return render_template('lr.html')
+
+@app.route('/dt')
+def dt_algo_page():
+    return render_template('dt.html')
+
+@app.route('/rf')
+def rf_algo_page():
+    return render_template('rf.html')
+
+@app.route('/nb_predict')
+def nb_predict_page():
+    return render_template('nb_predict.html')
+
+@app.route('/lr_predict')
+def lr_predict_page():
+    return render_template('lr_predict.html')
+
+@app.route('/dt_predict')
+def dt_predict_page():
+    return render_template('dt_predict.html')
+
+@app.route('/rf_predict')
+def rf_predict_page():
+    return render_template('rf_predict.html')
+
+
+@app.route('/upload_event', methods=["POST"])
+def upload_event():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'],
+                                   filename))
+            print("[debug in upload_event] filename=", filename, flush=True)
+    return redirect(request.referrer)
+    #return jsonify({}), 200
+            #session['uploaded_filename'] = filename
+            #return redirect(url_for('uploaded_file',
+            #                        filename=filename))
 
 
 @app.route("/login",methods=["POST","GET"])
@@ -197,21 +324,56 @@ def google_sign_in():
     #return redirect("/user")
     return jsonify({}), 200
 
+
+import train_with_class
+
 @app.route('/train', methods=['POST'])
 def train_with_algo():
     data = request.get_json()
+    algorithm = data.pop(
+        'algorithm', '[in train_with_algo()] error, unknown algorithm  ...')
+    # if use_algo == 'KNN':
+    #     request_dict['dataset'], request_dict['num_fields, request_dict['num_neigbour, request_dict['distance_func, request_dict['seed = data['dataset'], data[
+    #         'field'], data['neigbour'], data['distance'], data['seed']
+    # elif use_algo == 'LR':
+    #     dataset, seed, iterations = data['dataset'], data[
+    #         'seed'], data['iterations']
+    # elif use_algo == 'DT':
+    #     dataset, seed, categoricalFeaturesInfo = data['dataset'], data[
+    #         'seed'], json.loads(data['categoricalFeaturesInfo'])
+    # elif use_algo == 'RF':
+    #     dataset, seed, categoricalFeaturesInfo, numTrees = data['dataset'], data[
+    #         'seed'], json.loads(data['categoricalFeaturesInfo']), data['numTrees']
+    
+    # Run Training process
+    train_score = train_with_class.call_train_function(
+        algorithm=algorithm, mode='train', algorithm_parameter=data)  # call_train_function(algorithm, mode, algorithm_parameter)
+
     print('[debug in train_with_algo()]: data=', data, flush=True)
-    file_url = data['url']
-    num_fields = data['field']
-    num_neigbour = data['neigbour']
-    distance_func = data['distance']
-    seed = data['seed']
-    response = test.KNN(file_url, int(num_fields), int(num_neigbour), distance_func)
-    print('[debug in train_with_algo()]: response=', response, flush=True)
-    p = knn(distance=response[0], score=response[1],
-            neighbor=response[2], datasetName=response[3], featureLen=response[4], username='anonymous' if "user" not in session else session['user'])
+    print('[debug in train_with_algo()]: response=', train_score, flush=True)
+    
+    # Create a record and Save to DB
+    p = globals()[algorithm.lower()](
+        **data, username='anonymous' if "user" not in session else session['user'])
     p.save_to_db()
-    return jsonify(response[1])
+    
+    return jsonify(train_score)
+
+
+@app.route('/predict', methods=['POST'])
+def predict_with_algo():
+    data = request.get_json()
+    algorithm = data.pop(
+        'algorithm', '[in train_with_algo()] error, unknown algorithm  ...')
+
+    # Run Predicting process
+    train_score = train_with_class.call_train_function(
+        algorithm=algorithm, mode='test', algorithm_parameter=data)  # call_train_function(algorithm, mode, algorithm_parameter)
+
+    print('[debug in train_with_algo()]: data=', data, flush=True)
+    print('[debug in train_with_algo()]: response=', train_score, flush=True)
+
+    return jsonify(train_score)
 
 
 @app.route('/query', methods=['POST'])
@@ -223,7 +385,7 @@ def query_train_data():
     if data['query_num'] == '':
         data['query_num'] = 10
 
-    algo_class = globals()[data['use_algo']]
+    algo_class = globals()[data['use_algo'].lower()]
     if data['query_table_key'] == "all":
         db_data = algo_class.query.limit(int(data['query_num']))
     elif data['query_table_key'] == "distance":
@@ -231,22 +393,46 @@ def query_train_data():
             distance=data['query_table_value']).limit(int(data['query_num']))
     elif data['query_table_key'] == "datasetName":
         db_data = algo_class.query.filter_by(
-            datasetName=data['query_table_value']).limit(int(data['query_num']))
+            dataset_name=data['query_table_value']).limit(int(data['query_num']))
     elif data['query_table_key'] == "neighbor":
         db_data = algo_class.query.filter_by(
             neighbor=data['query_table_value']).limit(int(data['query_num']))
     elif data['query_table_key'] == "seed":
         db_data = algo_class.query.filter_by(
             seed=data['query_table_value']).limit(int(data['query_num']))
+    elif data['query_table_key'] == "iterations":
+        db_data = algo_class.query.filter_by(
+            iterations=data['query_table_value']).limit(int(data['query_num']))
+    elif data['query_table_key'] == "categorical_features_info":
+        db_data = algo_class.query.filter_by(
+            categorical_features_info=data['query_table_value']).limit(int(data['query_num']))
+    elif data['query_table_key'] == "num_tree":
+        db_data = algo_class.query.filter_by(
+            num_tree=data['query_table_value']).limit(int(data['query_num']))
     else:
         db_data = ["key not found"]
 
     response = {}
-    for idx, o in enumerate(db_data):
-        response[idx] = [o.rid, o.distance, o.score, o.neighbor, o.datasetName,
-                         o.featureLen, o.seed, o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
-        if idx == data['query_num']:
-            break
+    if data['use_algo'] == 'KNN':
+        for idx, o in enumerate(db_data):
+            response[idx] = [o.rid, o.dataset_name, o.distance, o.score, o.neighbor,
+                         o.seed, o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
+    elif data['use_algo'] == 'NB':
+        for idx, o in enumerate(db_data):
+            response[idx] = [o.rid, o.dataset_name, o.score, o.seed,
+                             o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
+    elif data['use_algo'] == 'LR':
+        for idx, o in enumerate(db_data):
+            response[idx] = [o.rid, o.dataset_name, o.score, o.iterations, o.seed,
+                             o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
+    elif data['use_algo'] == 'DT':
+        for idx, o in enumerate(db_data):
+            response[idx] = [o.rid, o.dataset_name, o.score, o.categorical_features_info, o.seed,
+                             o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
+    elif data['use_algo'] == 'RT':
+        for idx, o in enumerate(db_data):
+            response[idx] = [o.rid, o.dataset_name, o.score, o.categorical_features_info, o.num_tree, o.seed,
+                             o.timestamp.strftime("%m/%d/%Y, %H:%M:%S")]
     response = jsonify(status="success", data=response)
     print(response, flush=True)
     return response
@@ -262,7 +448,7 @@ def allowed_file(filename):
 if __name__ == '__main__':
     #db.create_all()
     #app.run(host='0.0.0.0')
-    app.run(debug=True)
+    app.run(debug=True, port=5000, host='0.0.0.0')
     db.create_all()
 	#print(type(o.rid), type(o.distance), type(o.score), type(o.neighbor), type(o.datasetName), type(o.featureLen), type(o.timestamp))
 	

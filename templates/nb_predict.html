@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %} KNN algorithm Predict {% endblock %}
+{% block title %} NB algorithm Predict {% endblock %}
 {% block content %} 
 
 <div class="container">
@@ -11,17 +11,17 @@
       <form>
         <div class="form-group">
           <label for="para-to-train"><strong>Enter the parameter</strong></label>
-          <input type="number" class="form-control" id="numfields" aria-describedby="numfields" placeholder="Enter numfields (Feature cols)" value='4'>
           <input type="text" class="form-control" id="feature" aria-describedby="feature"  placeholder="Enter Feature" value=''>
           <label for="para-to-train">
-            For example: data=[0.1 0.2 0.3 0.4]<br>
+            For example: data=[1.423e+01, 1.710e+00, 2.430e+00, 1.560e+01, 1.270e+02, 2.800e+00, 3.060e+00, 2.800e-01, 2.290e+00, 5.640e+00,
+            1.040e+00, 3.920e+00, 1.065e+03]<br>
             此頁面會以一個我們已經訓練好的 Model，用您的 Feature 做 Predict，回傳一個 Label 給您。
           </label>
-
         </div>
-          
-        <button type="submit" class="btn btn-primary mb-2" id="">Train</button></br>
+        <button type="submit" class="btn btn-primary mb-2" id="predict">Predict</button></br>
         </br>
+        <div id="algo" name="NB">
+        </div>
       </form>
     </div>
 

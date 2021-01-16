@@ -11,24 +11,41 @@
       <form>
         <div class="form-group">
           <label for="para-to-train"><strong>Enter the parameter</strong></label>
-          <input type="text" class="form-control" id="file_url" aria-describedby="file url" placeholder="Enter file url,   e.g. ./dis.txt" value='buildin_iris'>
-          <input type="number" class="form-control" id="numfields" aria-describedby="numfields" placeholder="Enter   numfields (Feature cols)" value='4'>
-          <input type="text" class="form-control" id="numNearestNeigbours" aria-describedby="num of Neigbours"   placeholder="Enter num of Neigbours" value='5'>
-          <input type="text" class="form-control" id="distance" aria-describedby="choose distance" placeholder="Enter   distance u want(distanceAbs、distanceEuc、distanceChe、distanceCos)" value='distanceAbs'>
-          <input type="number" class="form-control" id="seed" aria-describedby="numfields" placeholder="Enter   numfields (Feature cols)" value='10'>
+          <div class="input-group">
+            <span class="input-group-text">File Name or dataset name</span>
+            <input type="text" class="form-control" id="dataset" aria-describedby="file url" placeholder="Enter file url, e.g. ./dis.txt" value='buildin_iris'>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text">Num of Neigbours (K)</span>
+            <input type="text" class="form-control" id="numNearestNeigbours" aria-describedby="num of Neigbours"   placeholder="Enter num of Neigbours" value='5'>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text">Distance Algorithm</span>
+            <input type="text" class="form-control" id="distance" aria-describedby="choose distance" placeholder="Enter distance u want(distanceAbs、distanceEuc、distanceChe、distanceCos)" value='distanceAbs'>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text">Seed</span>
+            <input type="number" class="form-control" id="seed" aria-describedby="numfields" placeholder="Enter Seed" value='10'>
+          </div>
           <label for="para-to-train">
             For example: data=[0.1, 0.2, 0.3, 0.4], [...]  --> numfields = 4<br>
             Distance: 歐式距離(distanceEuc)、曼哈頓距離 (distanceAbs)、chebyshev distance(distanceChe)、餘弦距離(distanceCos)<br>
           </label>
-
-          <label for="para-to-train">
-            這邊可以上傳自己的 dataset
-          </label>
-          <input type=file name=file>
         </div>
           
         <button type="submit" class="btn btn-primary mb-2" id="train">Train</button></br>
         </br>
+      </form>
+      <form action="/upload_event" method="post" enctype="multipart/form-data"> 
+        <label for="para-to-train">
+          這邊可以上傳自己的 dataset
+        </label>
+        <p>
+          <div class="input-group mb-3">
+            <input type="file" class="form-control" name="file">
+            <input type="submit" class="input-group-text" value='upload'>
+          </div>
+        </p>
       </form>
     </div>
 
@@ -41,7 +58,7 @@
       </form>
     </div> <!-- col -->
   </div> <!-- row -->
-
+  <hr />
   <div class="row">
     <div class="col">
       <form>
@@ -58,7 +75,7 @@
             <input type="text" class="form-control" id="query_table_key" aria-describedby="query_table_key" placeholder="spec query column" disabled>
             <input type="number" class="form-control" id="query_num" aria-describedby="query_num" placeholder="Enter query number">
           </div>
-          <div id="algo" name="knn">
+          <div id="algo" name="KNN">
             Distance : distanceAbs、distanceEuc、distanceChe、distanceCos<br>
             DatasetName : buildin_iris、buildin_wine<br>
             Neighbor Num : 3、5、7 ...
@@ -74,7 +91,17 @@
         <div class="form-group" id="query-response">
           <label for="query-result"><strong>Return:</strong></label>
           <div>
-            <table class='table dark-table' id='query-table'></table>
+            <table class='table dark-table' id='query-table'>
+              <tr id="cloumn-label">
+                <td>Rid</td>
+                <td>DatasetName</td>
+                <td>Distance</td>
+                <td>Score</td>
+                <td>Neighbor</td>
+                <td>Seed</td>
+                <td>Timestamp</td>
+              </tr>
+            </table>
           </div>
         </div>
 

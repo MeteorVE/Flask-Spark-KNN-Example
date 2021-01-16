@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %} Naive Bayes Classification Algorithm {% endblock %}
+{% block content %}
+
+<div class="container">
+    <h1>Online Train: Naive Bayes Classification Algorithm</h1>
+    <p>Give me parameter, I will give u a score.
+    </p>
+    <div class="row">
+        <div class="col">
+            <form>
+                <div class="form-group">
+                    <label for="para-to-train"><strong>Enter the parameter</strong></label>
+                    <div class="input-group">
+                        <span class="input-group-text">File Name or dataset name</span>
+                        <input type="text" class="form-control" id="dataset" aria-describedby="file url"
+                            placeholder="Enter file url, e.g. wine.txt" value='buildin_wine'>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text">Seed</span>
+                        <input type="number" class="form-control" id="seed" aria-describedby="numfields"
+                            placeholder="Enter Seed" value='10'>
+                    </div>
+                    <label for="para-to-train">
+                        For example: seed = 100<br>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary mb-2" id="train">Train</button></br>
+                </br>
+            </form>
+            <form action="/upload_event" method="post" enctype="multipart/form-data">
+                <label for="para-to-train">
+                    這邊可以上傳自己的 dataset
+                </label>
+                <p>
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" name="file">
+                        <input type="submit" class="input-group-text" value='upload'>
+                    </div>
+                </p>
+            </form>
+        </div>
+
+        <div class="col">
+            <form>
+                <div class="form-group" id="train-response">
+                    <label for="train-result"><strong>Return:</strong></label>
+                    <textarea readonly class="form-control" id="train-result" rows="5"></textarea>
+                </div>
+            </form>
+        </div> <!-- col -->
+    </div> <!-- row -->
+    <hr />
+    <div class="row">
+        <div class="col">
+            <form>
+                <div class="form-group">
+                    <label for="para-to-train"><strong>Enter the query information</strong></label>
+                    <div class="input-group">
+                        <select class="custom-select" id="querySelect" onchange=querySelectToggle(this)>
+                            <option selected value="all">All</option>
+                            <option value="datasetName">Dataset Name</option>
+                            <option value="seed">Seed</option>
+                        </select>
+                        <input type="text" class="form-control" id="query_table_key" aria-describedby="query_table_key"
+                            placeholder="spec query column" disabled>
+                        <input type="number" class="form-control" id="query_num" aria-describedby="query_num"
+                            placeholder="Enter query number">
+                    </div>
+                    <div id="algo" name="NB">
+                        <br>
+                        DatasetName : buildin_iris、buildin_wine<br>
+                        Seed: 10, 100 ...
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-2" id="query">Query</button></br>
+                </br>
+            </form>
+        </div>
+
+        <div class="col">
+            <form>
+                <div class="form-group" id="query-response">
+                    <label for="query-result"><strong>Return:</strong></label>
+                    <div>
+                        <table class='table dark-table' id='query-table'>
+                            <tr id="cloumn-label">
+                                <td>Rid</td>
+                                <td>DatasetName</td>
+                                <td>Score</td>
+                                <td>Seed</td>
+                                <td>Timestamp</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            </form>
+        </div> <!-- col -->
+    </div> <!-- row -->
+
+</div> <!-- container -->
+
+{% endblock %}

@@ -20,6 +20,14 @@
 
 
 
+複製步驟:
+
+1. Create class (for database)
+2. add @app.route、Copy html 檔案
+3. 改 JS 和 HTML
+
+
+
 # 待完成
 
 1. Query DB 可以給予欄位篩選 (OK)
@@ -30,7 +38,8 @@
   - 參考 [這篇](https://myapollo.com.tw/zh-tw/integrating-google-sign-in-into-flask-app/)
   - 目前 username 仍然是抓 email 來用，才能保證 unique。
   - 登出 : 檢查 session sign in 方式然後後端 Request revoke
-    參考 [這篇](https://developers.google.com/identity/protocols/oauth2/web-server#python_8)
+    參考 [這篇](https://developers.google.com/identity/protocols/oauth2/web-server#python_8) [官方 Doc](https://github.com/googleapis/google-api-python-client)
+  - 關於 JS [GoogleUser.getAuthResponse](https://developers.google.com/identity/sign-in/web/reference#gapiauth2authresponse)
 5. 有關 ML Algorithm 
   - **針對每個 algo 都要弄一個 DB (因為要 Query)** (寫 Class)
     - 加使用者的 Name
