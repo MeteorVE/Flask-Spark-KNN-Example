@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = "hellothisismysecretkey"
 app.config['JSON_AS_ASCII'] = False
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-#app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:admin@localhost:3306/traindb"
+#app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://username:your_password@localhost:3306/traindb"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users_table.sqlite3' # "users_table" here is the name of the table that you're gonna be referencing 
 app.permanent_session_lifetime = timedelta(minutes=3)
 db = SQLAlchemy(app)
@@ -59,7 +59,6 @@ class knn(db.Model):
         self.neighbor = num_nearest_neigbours
         self.seed = seed
         self.dataset_name = dataset
-        #self.featureLen = featureLen
        
     def save_to_db(self):
         db.session.add(self) 
@@ -271,14 +270,12 @@ def user():
 
 @app.route("/logout")
 def logout():
-    #if "user" in session:
-    #user = session["user"]
+
     if "google_token" in session:
         # print("[debug in logout] token=", session['google_token'], flush=True)
         # response = requests.post('https://accounts.google.com/o/oauth2/revoke',
         #               params={'token': session['google_token']},
         #               headers={'content-type': 'application/x-www-form-urlencoded'}) 
-        # print(response.content, flush=True)
         session.pop('google_token')
     flash("You have been logged out!", "info")
     session.pop("user",None) #remove the user data from my session 
@@ -321,7 +318,6 @@ def google_sign_in():
     session['user'] = username
     session['google_token'] = token
 
-    #return redirect("/user")
     return jsonify({}), 200
 
 
@@ -332,18 +328,6 @@ def train_with_algo():
     data = request.get_json()
     algorithm = data.pop(
         'algorithm', '[in train_with_algo()] error, unknown algorithm  ...')
-    # if use_algo == 'KNN':
-    #     request_dict['dataset'], request_dict['num_fields, request_dict['num_neigbour, request_dict['distance_func, request_dict['seed = data['dataset'], data[
-    #         'field'], data['neigbour'], data['distance'], data['seed']
-    # elif use_algo == 'LR':
-    #     dataset, seed, iterations = data['dataset'], data[
-    #         'seed'], data['iterations']
-    # elif use_algo == 'DT':
-    #     dataset, seed, categoricalFeaturesInfo = data['dataset'], data[
-    #         'seed'], json.loads(data['categoricalFeaturesInfo'])
-    # elif use_algo == 'RF':
-    #     dataset, seed, categoricalFeaturesInfo, numTrees = data['dataset'], data[
-    #         'seed'], json.loads(data['categoricalFeaturesInfo']), data['numTrees']
     
     # Run Training process
     train_score = train_with_class.call_train_function(
@@ -456,9 +440,6 @@ def allowed_file(filename):
 
 
 if __name__ == '__main__':
-    #db.create_all()
-    #app.run(host='0.0.0.0')
-    app.run(debug=True, port=5000, host='0.0.0.0')
     db.create_all()
-	#print(type(o.rid), type(o.distance), type(o.score), type(o.neighbor), type(o.datasetName), type(o.featureLen), type(o.timestamp))
+    app.run(debug=True, port=5000, host='0.0.0.0')
 	

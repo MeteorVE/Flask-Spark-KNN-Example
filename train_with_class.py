@@ -87,7 +87,7 @@ class Distance_function(object):
         return ret
 
 
-def KNN(sc, dataset='./dis.txt', num_nearest_neigbours=5, distance_func='distanceAbs', seed=10):
+def KNN(sc, dataset='buildin_iris', num_nearest_neigbours=5, distance_func='distanceAbs', seed=10):
 
     # prepare data
     if dataset == 'buildin_iris':
@@ -97,14 +97,12 @@ def KNN(sc, dataset='./dis.txt', num_nearest_neigbours=5, distance_func='distanc
     elif dataset == 'buildin_digits':
         total_data = turn_digits_to_sc(sc)
     else:
-        # url= './dis.txt'
         text_file = sc.textFile('upload/'+dataset)
         total_data = text_file.map(lambda line: line.split(" "))
 
     testset,trainingset = total_data.randomSplit([3,7], seed) # random seed
 
     numfields = len(testset.collect()[0]) # Feature columns
-    #numNearestNeigbours = _numNearestNeigbours # K
 
     print("[debug]: test set:", testset.collect(),"\n================\n")
 
@@ -114,7 +112,7 @@ def KNN(sc, dataset='./dis.txt', num_nearest_neigbours=5, distance_func='distanc
     .groupByKey().map(lambda p: (p[0], sorted(p[1]) ) ) \
     .map(lambda t: accuracy_score(t[0], t[1], num_nearest_neigbours) )
 
-    print('[debug]: in final.py :', counts.collect() )
+    print('[debug]: in train_with_class.py :', counts.collect() )
 
     ret = counts.collect()
 
@@ -290,9 +288,8 @@ def call_train_function(algorithm, mode, algorithm_parameter):
             data = getattr(get_dataset, "get_iris_dataset")(sc)
         else:
             print('read from file or throw exception ...')
-            data = get_userdefined_dataset(sc, data_name)
             # read file to get dataset
-            # data = read( ??? )
+            data = get_userdefined_dataset(sc, data_name)
 
         # Run train/test process
         if mode == 'train':

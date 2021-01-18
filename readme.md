@@ -58,48 +58,57 @@ Machine Learning As A Service。
 
 
 
-# 更新紀錄
 
-- 2020.01.10
-  - 將 ``final.py`` 改名成 ``knn_spark.py``，相對地更動 ``app.py`` 內的 import 相關部分。
-  - In ``knn_spark.py`` : 
-    - 修正預設 label 總是讀取 data[4] 的問題 (改讀 data[-1])
-    - 修正計算距離時會將 label 當成 data 一起加入計算
-    - 修正計算分數時因為會 compare label 卻讀 data[4] 而非 data[-1] 的問題
 
 # 如何使用
 
-此 Proj 目前還沒完成，先說使用方式 : 
+
 1. 環境建置 : 
    - 可以用此 repo 提供的 ``docker-compose.xml``，指令 : ``docker-compose up``
      - 執行此指令請在英文目錄底下，因為因為他的 Name 會參照該目錄 ...
    - 建好後可以用 docker cp 來複製 code 等資料到 container 內，複製資料夾不需要 ``-r`` 它會自動全部複製
      - ``docker cp <dir or filename> <container name>:/<path u want to place in container>``
    - 在 Docker 內 / 或是你的電腦環境，可以先跑一次 ``pip install -r requirements.txt`` 或個別做 ``pip install``
-2. 如果只想 demo KNN with Spark，
-  可以在有裝 Spark 的環境跑 (記得將 ``KNN()`` 取消註解)
-  ``python final.py``
-    - 其中，因為環境不同，可能得改一下  ``SPARK_HOME`` 的 path
-    - 以及如果沒有下載 ``dis.txt``，亦可使用我們從 sklearn 提取的 dataset，例如 Iris 的 dataset
-      可以將 ``KNN()`` -> ``KNN('buildin_iris', 4)`` 即可指定資料集 (目前僅有支援 ``buildin_iris`` 和 ``buildin_wine``)
-    - Iris 的 dataset 每個 data 維度是 4，Wine 的則是 13，使用 Wine 記得要改成 ``KNN('buildin_wine', 13)``
+2. 如果只想 demo KNN with Spark，可以參考下面 code 進行呼叫。
+
+```python callexample.py
+import train_with_class
+#train_with_class.create_default_model() # after uncomment .save(), you can save model to file
+train_with_class.call_train_function(algorithm='NB', mode='train', algorithm_parameter={'dataset':'buildin_wine','seed':10})
+train_with_class.call_train_function(algorithm='LR', mode='train', algorithm_parameter={'dataset':'buildin_iris','iterations':10 ,'seed':10})
+train_with_class.call_train_function(algorithm='DT', mode='train', algorithm_parameter={'dataset':'buildin_iris','categoricalFeaturesInfo':{} ,'seed':10})
+train_with_class.call_train_function(algorithm='RF', mode='train', algorithm_parameter={'dataset':'buildin_iris','categoricalFeaturesInfo':{} , 'numTrees':5,'seed':10})
+
+```
+
+  - 其中，因為環境不同，可能得改一下  ``SPARK_HOME`` 的 path
+  - 可以呼叫的內建 dataset : ``buildin_iris``、``buildin_wine``
+
 3. 若想要 demo flask 的部分，可以不用裝 spark，直接 run ``python app.py``，然後去 ``localhost:5000`` 就能看到了。
     - port 預設是 5000，有可能因為 code 更改過程指定成其他的，可另外指定，例如 ``app.run(host='0.0.0.0', port=1234)``
-    - 有另外寫一個 ``test.py``，裡面就只放一個簡單的 ``KNN()`` function (實際上並不能 run KNN)
-      用途是測試串接前後端是否有成功，總之打開網頁，然後輸入參數，可以觀察 ``python app.py`` 底下的 log，是否有正常的運作 POST Method。
-    
+    - 有另外寫一個 ``test.py``，裡面就只放一個簡單的 ``KNN()`` function 
+    (實際上並不能 run KNN，僅用來測試 RESTful API 可以正確傳送)
+    - 如果是跟我用同一個 Docker file，Docker 內 必須是 ``0.0.0.0`` 而非 ``127.0.0.1``，在 mapping 到外面時，外面可以用 ``localhost:5678`` 來 access。
+
+4. 關於 DB: 如果想使用 MariaDB，得自行建立好相關環境
+  
     
 
 - 已知可能 bug :
 
 1. 網頁端執行參數不可為空。JS 會傳 null 過去，然後把 None 當作參數傳進去後端。
-2. container 必須要有對應 port : ``-p 5678:5000``，
-   且 container 內的 flask app 必須帶有參數 ``host='0.0.0.0'`` 才能正常在 host 吃到
-   (這個參數已經在 code 中了，如果是用此 repo 的 docker-compose.xml build 則已內建 port 對應)
+  - 此項問題可以透過後端 ``app.py`` 偵測空字串，然後將 key 從 dictionary 刪除即可。
+2. 無法同時創建多個 SparkContext，所以無法同時兩人執行。
 
 
+# 一些開發筆記
 
-# 新增 DB 過程
+## 新增 DB 範例
+
+- 註1 : 可以不用手動 create table，在 ``app.py`` 內有一個 ``create_all()`` 可以自動建立。如果 run 第一次沒有建立，可以 run 第二次看看。
+- 註2 : 以下建立 table 只是範例，實際欄位已經經過更改。
+- 註3 : DB 部分可以用 sqlite 或是 mariadb 等等，更改下面部分即可 : 
+    ``app.config['SQLALCHEMY_DATABASE_URI']= 'string of db setting'``
 
 ```bash
 apt install mariadb-server
@@ -115,14 +124,13 @@ create table knn (
   Score float,
   Neighbor int,
   DatasetName varchar(255),
-  FeatureLen int,
   Time datetime
   PRIMARY KEY (Rid)
 );
 ```
 
 ```
-一些可能用到的指令
+一些其他可能用到的指令
 show columns from Knn
 alter table Knn change column History Rid Integer primary key;
 service mysql restart
@@ -130,8 +138,9 @@ alter table knn change Rid Rid int(11) AUTO_INCREMENT;
 DESCRIBE table_name;
 ```
 
-![](https://i.imgur.com/FVpJwk3.png)
+![example](https://i.imgur.com/FVpJwk3.png)
 
+- 註 : 此非最後的 Table 實際欄位，僅為範例圖片 
 
 
 ## 如果遇到 "Access denied for user 'root'@'localhost'"
@@ -156,15 +165,54 @@ DESCRIBE table_name;
 後來又發現，經過套件整合跑出來的指令都會是小寫，所以手動將 Table Name 改成 knn
 就有連上了。
 
-------------------------------------
 
-以下其餘筆記，跟 Proj 內的 code 倒是無關
+## 關於 Spark 一些小問題 
 
-# 快速入門關於 python sklearn 的相關函數
+1. Pyspark 在 initial 時會跳一些 [WARNING] 訊息，如果明明不是他該執行的時間卻重複跑出來
+  那可能是你把和 spark 相關的 initialization 放在 global 了，請確保 setting 和 initial 都寫在 function 內。
+2. 想要讓 Pyspark 在執行時有更多 Ram 可以用 ? 
+  把這段放在你執行 ``sc = pyspark.SparkContext()`` 之前。
+```python
+pyspark.SparkContext.setSystemProperty('spark.driver.memory', '4g')
+pyspark.SparkContext.setSystemProperty('spark.executor.memory', '4g')
+```
+3. 想要儲存訓練出來的 model : 
+```python
+from pyspark.mllib.classification import LogisticRegressionWithLBFGS as LR
+lr_model = LR.train(train_data, iterations, numClasses = _numClasses)
+lr_model.save(sc, "./model/" + modelname)
+```
+4. Pyspark 老問題 :  ``lambda a,b: (a+b, a-b)`` 這樣會出錯的話，可以試試看
+    ``lambda pair: (pair[0]+pair[1], pair[0]-pair[1])``
+5. mapreduce 相關其實很有趣，但很燒腦，可以想像程式會切成多個單位，將各個單位傳到 map() 括號內進行處理。
+
+## Flask 相關
+
+1. 如果 route 有設對，前端也有確定丟了 request 卻被伺服器拒絕
+  可以檢查一下 ``@app.route('/example', methods=["POST"])`` 的 method 是否有設定好。
+2. session 的操作 : 就像 dictionary 一樣，新增可以直接 ``session['key'] = val``，
+  刪除可以用 del 或是 ``val = session.pop('key', 'value if key not exist')``
+3. 有些範例會使用到 ``flash("Some info!", "info")`` 這是會被存在 session 的 message 中，而且是會累積起來的，直到有頁面去讓他 print。
+
+## Google Oauth 2.0
+
+1. 要先去設定一些東西，網路上教學不少；
+  最後有個填哪些網址可以存取 js lib，填上你的 localhost:port。
+2. 如果是用 flask，那 JS 或 Python 兩種都能來搞 Google Oauth。
+  我這邊是用 JS 弄，Code 上簡化了許多。
+  如果你登出想從後端處理，做法是透過 get token 然後送 request 到 google，
+  但我取了各種 token 都沒法拿到正確的 response。
+  所以用了比較 trick 的方法 (點 logout button 後先跑 JS 才觸發 flask route)
+  注意，官方的 JS 登出是要和登入同頁面，如果不同頁面得在 load js 時做 onload
+  可以參考 [這篇](https://stackoverflow.com/questions/38503749/using-google-sign-in-on-my-website-how-can-i-sign-the-user-out)
 
 
+<hr>
 
-## data.reshape(-1,1)
+## 快速入門關於 python sklearn 的相關函數
+
+
+### data.reshape(-1,1)
 
 reshape(-1, 1) 可以將以 A 資料轉換成 B 資料
 
@@ -182,13 +230,10 @@ A = [ [1,2,3], [4,5,6], [7,8,9] ]
 B = [ [1], [2], [3], [4], ..., [9]]
 ```
 
-
-
 Ref : [Numpy中reshape函数、reshape(1,-1)的含义(浅显易懂，源码实例)](https://blog.csdn.net/W_weiying/article/details/82112337)
 
 
-
-## train_test_split()
+### train_test_split()
 
 ```python
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, train_size=0.7, random_state=35, stratify=y)
@@ -212,7 +257,7 @@ random_state 的意義在於，你在取 random 時不是會有一個 seed 嗎 ?
 
 
 
-## load_iris()
+### load_iris()
 
 iris 就是鳶尾花，這個 data set 是在 sklearn 內建的 example dataset，方便寫 example 使用。
 
@@ -239,11 +284,6 @@ iris_target = iris['target']
 算好理解吧 ? 
 
 Ref : [如何獲取資料？ Sklearn內建資料集](https://medium.com/jameslearningnote/%E8%B3%87%E6%96%99%E5%88%86%E6%9E%90-%E6%A9%9F%E5%99%A8%E5%AD%B8%E7%BF%92-%E7%AC%AC2-1%E8%AC%9B-%E5%A6%82%E4%BD%95%E7%8D%B2%E5%8F%96%E8%B3%87%E6%96%99-sklearn%E5%85%A7%E5%BB%BA%E8%B3%87%E6%96%99%E9%9B%86-baa8f027ed7b)
-
-
-
-
-
 
 
 https://stackoverflow.com/questions/31404238/a-list-as-a-key-for-pysparks-reducebykey
